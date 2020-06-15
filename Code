@@ -1,0 +1,59 @@
+library(dplyr)
+library(plyr)
+
+# Leitura de Arquivos
+dados_notas = read.csv(file = "ratings.csv", header = TRUE)
+dados_filmes = read.csv(file = "movies.csv", header = TRUE)
+
+# Tabela das id's(filmes), notas, frequências
+movieId = dados_notas$movieId
+notas = dados_notas$rating
+frequencia = c(1:length(notas)) * 0 + 1
+
+tbl = data.frame(movieId, notas, frequencia)
+
+# Agrupa a id dos filmes, fazendo a média das notas e a soma das frequências de avaliações
+tbl = group_by(tbl, movieId)%>%
+  summarise(Nota = round(mean(notas),1), frequencia = sum(frequencia))
+
+tbl = arrange(tbl, desc(frequencia))
+
+# Cria Tabela de filmes separando os generos
+
+idFilmes = dados_filmes$movieId
+nomeFilmes = dados_filmes$title
+genero1 = c(NA)
+genero2 = c(NA)
+genero3 = c(NA)
+genero4 = c(NA)
+genero5 = c(NA)
+
+i = 1
+for (i in 1:length(nomeFilmes)) {
+  aux = strsplit(as.character(dados_filmes$genres[i]), "[|]")
+  genero1[i] = aux[[1]][1]
+  genero2[i] = aux[[1]][2]
+  genero3[i] = aux[[1]][3]
+  genero4[i] = aux[[1]][4]
+  genero5[i] = aux[[1]][5]
+}
+
+tbl2 = data.frame(idFilmes, nomeFilmes, genero1, genero2, genero3, genero4, genero5)
+
+# Lista Principai
+populares = c(1:5)
+
+buscaFilme = function(id){
+  i = 1
+  for (i in 1:length(dados_filmes$movieId)) {
+    if (id == dados_filmes$movieId[i]) {
+      return(dados_filmes$title[i])
+    }
+  }
+}
+
+i = 1
+for (i in populares) {
+  id = tbl$movieId[i]
+  populares[i] = as.character(buscaFilme(id))
+}
